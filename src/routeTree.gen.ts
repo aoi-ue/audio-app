@@ -14,6 +14,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './pages/__root'
 import { Route as AppImport } from './pages/_app'
+import { Route as AppUsertableImport } from './pages/_app/usertable'
+import { Route as AppAudioplayerImport } from './pages/_app/audioplayer'
 
 // Create Virtual Routes
 
@@ -37,6 +39,16 @@ const AppIndexLazyRoute = AppIndexLazyImport.update({
   getParentRoute: () => AppRoute,
 } as any).lazy(() => import('./pages/_app/index.lazy').then((d) => d.Route))
 
+const AppUsertableRoute = AppUsertableImport.update({
+  path: '/usertable',
+  getParentRoute: () => AppRoute,
+} as any)
+
+const AppAudioplayerRoute = AppAudioplayerImport.update({
+  path: '/audioplayer',
+  getParentRoute: () => AppRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -55,6 +67,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninLazyImport
       parentRoute: typeof rootRoute
     }
+    '/_app/audioplayer': {
+      id: '/_app/audioplayer'
+      path: '/audioplayer'
+      fullPath: '/audioplayer'
+      preLoaderRoute: typeof AppAudioplayerImport
+      parentRoute: typeof AppImport
+    }
+    '/_app/usertable': {
+      id: '/_app/usertable'
+      path: '/usertable'
+      fullPath: '/usertable'
+      preLoaderRoute: typeof AppUsertableImport
+      parentRoute: typeof AppImport
+    }
     '/_app/': {
       id: '/_app/'
       path: '/'
@@ -68,10 +94,14 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AppRouteChildren {
+  AppAudioplayerRoute: typeof AppAudioplayerRoute
+  AppUsertableRoute: typeof AppUsertableRoute
   AppIndexLazyRoute: typeof AppIndexLazyRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAudioplayerRoute: AppAudioplayerRoute,
+  AppUsertableRoute: AppUsertableRoute,
   AppIndexLazyRoute: AppIndexLazyRoute,
 }
 
@@ -80,11 +110,15 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 export interface FileRoutesByFullPath {
   '': typeof AppRouteWithChildren
   '/signin': typeof SigninLazyRoute
+  '/audioplayer': typeof AppAudioplayerRoute
+  '/usertable': typeof AppUsertableRoute
   '/': typeof AppIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/signin': typeof SigninLazyRoute
+  '/audioplayer': typeof AppAudioplayerRoute
+  '/usertable': typeof AppUsertableRoute
   '/': typeof AppIndexLazyRoute
 }
 
@@ -92,15 +126,23 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_app': typeof AppRouteWithChildren
   '/signin': typeof SigninLazyRoute
+  '/_app/audioplayer': typeof AppAudioplayerRoute
+  '/_app/usertable': typeof AppUsertableRoute
   '/_app/': typeof AppIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/signin' | '/'
+  fullPaths: '' | '/signin' | '/audioplayer' | '/usertable' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/signin' | '/'
-  id: '__root__' | '/_app' | '/signin' | '/_app/'
+  to: '/signin' | '/audioplayer' | '/usertable' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/signin'
+    | '/_app/audioplayer'
+    | '/_app/usertable'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 
@@ -133,11 +175,21 @@ export const routeTree = rootRoute
     "/_app": {
       "filePath": "_app.tsx",
       "children": [
+        "/_app/audioplayer",
+        "/_app/usertable",
         "/_app/"
       ]
     },
     "/signin": {
       "filePath": "signin.lazy.tsx"
+    },
+    "/_app/audioplayer": {
+      "filePath": "_app/audioplayer.tsx",
+      "parent": "/_app"
+    },
+    "/_app/usertable": {
+      "filePath": "_app/usertable.tsx",
+      "parent": "/_app"
     },
     "/_app/": {
       "filePath": "_app/index.lazy.tsx",
