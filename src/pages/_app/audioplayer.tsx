@@ -34,6 +34,7 @@ type AudioFile = {
     description: string;
     category: string;
     file: string;
+    collectionName: string;
 };
 
 export default function AudioPlayerPage() {
@@ -60,6 +61,7 @@ export default function AudioPlayerPage() {
                         description: record.description,
                         category: record.category,
                         file: record.file,
+                        collectionName: record.collectionName,
                     }))
                 );
             });
@@ -90,6 +92,7 @@ export default function AudioPlayerPage() {
                         description: record.description,
                         category: record.category,
                         file: record.file,
+                        collectionName: record.collectionName, // This property is automatically available on PocketBase records
                     }))
                 )
             );
@@ -196,18 +199,20 @@ export default function AudioPlayerPage() {
                 {files.map((file) => (
                     <Card
                         key={file.id}
-                        className="p-4 flex flex-col gap-2"
+                        className="p-4 flex flex-row items-center gap-6"
                     >
-                        <div className="font-semibold">
-                            {file.description}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                            {file.category}
+                        <div className="flex flex-col flex-1">
+                            <div className="font-semibold">
+                                {file.description}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                                {file.category}
+                            </div>
                         </div>
                         <audio
                             controls
                             src={pb.files.getUrl(file, file.file)}
-                            className="mt-2"
+                            className="min-w-[200px]"
                         />
                     </Card>
                 ))}
