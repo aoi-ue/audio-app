@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+    # --------------------------------
+    # FRONTEND SERVICE (React/Vite Development Server)
+    # Runs the application and provides hot-reloading for development.
+    # --------------------------------
+    frontend:
+        image: node:20-alpine
+        container_name: audio_frontend
+        working_dir: /app
+        volumes:
+            - .:/app
+            - node_modules_vol:/app/node_modules
+        ports:
+            # Vite default port (accessible on host at http://localhost:5173)
+            - '5173:5173'
+        command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+        depends_on:
+            backend:
+                # REVERTED: Now requires the backend to be fully healthy before starting
+                condition: service_healthy
+        environment:
+            # Public URL for the browser to access PocketBase
+            VITE_PUBLIC_POCKETBASE_URL: http://localhost:8090
+
+    # --------------------------------
+    # BACKEND SERVICE (PocketBase)
+    # Builds the dedicated PocketBase image and runs the database/API.
+    # --------------------------------
+    backend:
+        build:
+            context: .
+            # Assuming the Dockerfile is at ./pocketbase/Dockerfile
+            dockerfile: ./pocketbase/Dockerfile
+        container_name: audio_pocketbase
+        restart: unless-stopped
+        ports:
+            # Map host port 8090 to container port 8090 (Admin UI and API)
+            - '8090:8090'
+        volumes:
+            # Persistence for data and migrations
+            - ./pocketbase/pb_data:/pb/pb_data
+            - ./pocketbase/pb_migrations:/pb/pb_migrations
+            # Mount a placeholder/public content directory
+            - ./pocketbase/index.html:/pb/pb_public/index.html
+        healthcheck:
+            # Added back robust healthcheck using curl (which must be installed in Dockerfile)
+            test:
+                [
+                    'CMD',
+                    'curl',
+                    '-f',
+                    'http://localhost:8090/api/health',
+                ]
+            interval: 5s
+            timeout: 5s
+            # Increased retries and added start_period for reliable startup
+            retries: 10
+            start_period: 30s
+
+volumes:
+    # Named volume for fast node_modules caching
+    node_modules_vol:
